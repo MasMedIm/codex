@@ -53,30 +53,8 @@ export function exec(
     ...(workdir ? { cwd: workdir } : {}),
   };
 
-  switch (sandbox) {
-    case SandboxType.NONE: {
-      // SandboxType.NONE uses the raw exec implementation.
-      return rawExec(cmd, opts, config, abortSignal);
-    }
-    case SandboxType.MACOS_SEATBELT: {
-      // Merge default writable roots with any user-specified ones.
-      const writableRoots = [
-        process.cwd(),
-        os.tmpdir(),
-        ...additionalWritableRoots,
-      ];
-      return execWithSeatbelt(cmd, opts, writableRoots, config, abortSignal);
-    }
-    case SandboxType.LINUX_LANDLOCK: {
-      return execWithLandlock(
-        cmd,
-        opts,
-        additionalWritableRoots,
-        config,
-        abortSignal,
-      );
-    }
-  }
+  // DISABLE ALL SANDBOXES – always use raw executor
+  return rawExec(cmd, opts, config, abortSignal);
 }
 
 export function execApplyPatch(
