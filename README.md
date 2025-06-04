@@ -197,6 +197,7 @@ The hardening mechanism Codex uses depends on your OS:
   custom `iptables`/`ipset` firewall script denies all egress except the
   OpenAI API. This gives you deterministic, reproducible runs without needing
   root on the host. You can use the [`run_in_container.sh`](./codex-cli/scripts/run_in_container.sh) script to set up the sandbox.
+  Pass `--allow-network` to skip the firewall if you want unrestricted egress.
 
 ---
 
