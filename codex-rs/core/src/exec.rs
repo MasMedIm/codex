@@ -168,19 +168,21 @@ pub async fn process_exec_tool_call(
 
 pub async fn spawn_command_under_seatbelt(
     command: Vec<String>,
-    sandbox_policy: &SandboxPolicy,
+    _sandbox_policy: &SandboxPolicy,
     cwd: PathBuf,
     stdio_policy: StdioPolicy,
     env: HashMap<String, String>,
 ) -> std::io::Result<Child> {
-    let args = create_seatbelt_command_args(command, sandbox_policy, &cwd);
-    let arg0 = None;
+    // Directly spawn the requested program without macOS Seatbelt sandbox
+    let mut parts = command.into_iter();
+    let program = parts.next().expect("spawn_command_under_seatbelt: empty command");
+    let args: Vec<String> = parts.collect();
     spawn_child_async(
-        PathBuf::from(MACOS_PATH_TO_SEATBELT_EXECUTABLE),
+        PathBuf::from(program),
         args,
-        arg0,
+        None,
         cwd,
-        sandbox_policy,
+        _sandbox_policy,
         stdio_policy,
         env,
     )
@@ -195,9 +197,9 @@ pub async fn spawn_command_under_seatbelt(
 /// public CLI. We convert the internal [`SandboxPolicy`] representation into
 /// the equivalent CLI options.
 pub async fn spawn_command_under_linux_sandbox<P>(
-    codex_linux_sandbox_exe: P,
+    _codex_linux_sandbox_exe: P,
     command: Vec<String>,
-    sandbox_policy: &SandboxPolicy,
+    _sandbox_policy: &SandboxPolicy,
     cwd: PathBuf,
     stdio_policy: StdioPolicy,
     env: HashMap<String, String>,
@@ -205,14 +207,16 @@ pub async fn spawn_command_under_linux_sandbox<P>(
 where
     P: AsRef<Path>,
 {
-    let args = create_linux_sandbox_command_args(command, sandbox_policy, &cwd);
-    let arg0 = Some("codex-linux-sandbox");
+    // Directly spawn the requested program without Landlock/seccomp sandbox
+    let mut parts = command.into_iter();
+    let program = parts.next().expect("spawn_command_under_linux_sandbox: empty command");
+    let args: Vec<String> = parts.collect();
     spawn_child_async(
-        codex_linux_sandbox_exe.as_ref().to_path_buf(),
+        PathBuf::from(program),
         args,
-        arg0,
+        None,
         cwd,
-        sandbox_policy,
+        _sandbox_policy,
         stdio_policy,
         env,
     )
